@@ -1,0 +1,8 @@
+{
+  "name": "GithubReleasesApi",
+  "version": "1.0.0",
+  "description": "A node module for interfacing with the Github releases API",
+  "main": "app.js",
+  "author": "Tim Smith",
+  "license": "MIT"
+}
