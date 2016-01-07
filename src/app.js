@@ -1,4 +1,27 @@
+var request = require('superagent-bluebird-promise');
+var Q = require('q');
 
+function getRepoUrl(additionalPath) {
+	var url = githubReleasesApi.host + '/repos/' + githubReleasesApi.owner + '/' + githubReleasesApi.repo + '/';
+	if (additionalPath)
+		url += additionalPath;
+	return url;
+}
+
+function logRequestSuccess(res, message) {
+	console.log(
+		'[INFO]' + 
+		'[' + res.statusCode + ']' + 
+		'[' + res.req.method + ' ' + res.req.path + '] ' + 
+		(message ? message : ''));
+}
+
+function logRequestError(err) {
+	console.log('[ERROR]' + 
+		'[' + err.res.statusCode + ']' + 
+		'[' + err.res.req.method + ' ' + err.res.req.path + '] ' + 
+		err.message);
+}
 
 
 var githubReleasesApi = {
@@ -10,7 +33,21 @@ var githubReleasesApi = {
 	 * @return {JSON}			A list of release data
 	 */
 	getRepositoryReleases: function() {
-		console.log('getRepositoryReleases');
+		var deferred = Q.defer();
+
+		request
+			.get(getRepoUrl('releases'))
+            .set('Authorization', 'token ' + this.token)
+            .then(function(res) {
+            	logRequestSuccess(res);
+            	deferred.resolve(res.body);
+            }, 
+            function(err) {
+            	logRequestError(err);
+            	deferred.reject(err.message);
+            });
+
+        return deferred.promise;
 	},
 
 	/**
@@ -100,6 +137,7 @@ var githubReleasesApi = {
 githubReleasesApi.owner = 'github_username';
 githubReleasesApi.repo = 'repo_name';
 githubReleasesApi.token = 'youforgottosetyourtoken';
+githubReleasesApi.host = 'https://api.github.com';
 
 // Set to window object if there is a window
 if(typeof window !== 'undefined') {
